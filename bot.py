@@ -1,30 +1,36 @@
 from flask import Flask, request
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram import Bot, Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-# ЗАМЕНИ ЭТОТ ТОКЕН НА СВОЙ
+import os
+
 TOKEN = "8052314993:AAFRhqOhhEW6uGFuAdhNnNLM4pay-m9zXgE"
+bot = Bot(token=TOKEN)
 
 app = Flask(__name__)
 telegram_app = ApplicationBuilder().token(TOKEN).build()
 
-
-@app.route('/')
-def home():
-    return "Bot is running!"
-
-
-@app.route('/webhook', methods=['POST'])
-async def webhook():
-    if request.method == "POST":
-        update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-        await telegram_app.process_update(update)
-        return "OK", 200
-
-
-# /start команда
+# Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Привет! Отправь мне ссылку на видео или название музыки.")
+    await update.message.reply_text("Привет! Отправь мне ссылку или название музыки.")
 
+# Сообщения
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Спасибо! (но обработка пока не реализована)")
 
 telegram_app.add_handler(CommandHandler("start", start))
+telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+@app.route("/")
+def home():
+    return "Bot is running"
+
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    if request.method == "POST":
+        update = Update.de_json(request.get_json(force=True), bot)
+        telegram_app.update_queue.put_nowait(update)
+        return "OK", 200
+
+if __name__ == "__main__":
+    app.run(debug=True)

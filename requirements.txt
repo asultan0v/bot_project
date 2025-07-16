@@ -1,6 +1,6 @@
 flask
+python-telegram-bot==22.2.0
 gunicorn
-python-telegram-bot
 
  
  

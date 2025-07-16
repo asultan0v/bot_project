@@ -1,5 +1,6 @@
 flask
 gunicorn
+python-telegram-bot
 
  
  
